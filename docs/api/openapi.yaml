@@ -1,0 +1,352 @@
+openapi: 3.0.0
+info:
+  title: DataShare API
+  description: API REST pour le prototype MVP DataShare
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Serveur de développement local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "ValidationError"
+            http_status:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: "Invalid input data"
+            details:
+              type: object
+            correlation_id:
+              type: string
+              example: "abc-123"
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+
+    FileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        original_name:
+          type: string
+        mime_type:
+          type: string
+        size_bytes:
+          type: integer
+        token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+
+paths:
+  /auth/register:
+    post:
+      summary: Créer un compte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '201':
+          description: Compte créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+                  meta:
+                    type: object
+        '400':
+          description: Erreur de validation
+        '409':
+          description: Email déjà utilisé
+
+  /auth/login:
+    post:
+      summary: Connexion utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/UserResponse'
+                      access_token:
+                        type: string
+                      refresh_token:
+                        type: string
+                  meta:
+                    type: object
+        '401':
+          description: Identifiants invalides
+
+  /auth/refresh:
+    post:
+      summary: Rafraîchir le token d'accès
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Nouveau token d'accès
+        '401':
+          description: Refresh token invalide ou expiré
+
+  /files/upload:
+    post:
+      summary: Uploader un fichier
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Fichier à uploader (max 1 Go)
+                expires_in_days:
+                  type: integer
+                  default: 7
+                  minimum: 1
+                  maximum: 7
+                password:
+                  type: string
+                  minLength: 6
+                  description: Optionnel
+                tags:
+                  type: array
+                  items:
+                    type: string
+                    maxLength: 30
+                  maxItems: 3
+                  description: Optionnel
+      responses:
+        '201':
+          description: Fichier uploadé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      downloadUrl:
+                        type: string
+                      expiresAt:
+                        type: string
+                        format: date-time
+                  meta:
+                    type: object
+        '400':
+          description: Erreur (fichier trop volumineux, extension interdite)
+        '401':
+          description: Non authentifié
+
+  /files:
+    get:
+      summary: Lister l'historique des fichiers de l'utilisateur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des fichiers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FileResponse'
+                  meta:
+                    type: object
+        '401':
+          description: Non authentifié
+
+  /files/{id}:
+    delete:
+      summary: Supprimer un fichier
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Fichier supprimé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Interdit (pas le propriétaire)
+        '404':
+          description: Fichier non trouvé
+
+  /download/{token}:
+    get:
+      summary: Récupérer les métadonnées avant téléchargement
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Métadonnées du fichier
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  data:
+                    type: object
+                    properties:
+                      original_name:
+                        type: string
+                      size_bytes:
+                        type: integer
+                      expires_at:
+                        type: string
+                        format: date-time
+                      is_password_protected:
+                        type: boolean
+                  meta:
+                    type: object
+        '404':
+          description: Token invalide
+        '410':
+          description: Fichier expiré
+
+  /download/{token}/file:
+    post:
+      summary: Télécharger le fichier
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: Requis si is_password_protected est true
+      responses:
+        '200':
+          description: Stream du fichier
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Mot de passe incorrect
+        '404':
+          description: Token invalide
+        '410':
+          description: Fichier expiré
