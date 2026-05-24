@@ -28,16 +28,26 @@ export class FilesService {
     }
 
     const originalExtension = path.extname(file.originalname).toLowerCase();
-    const forbiddenExtensions = ['.exe', '.bat', '.sh', '.cmd', '.msi', '.vbs'];
+    const forbiddenExtensions = [
+      '.exe', '.bat', '.sh', '.cmd', '.msi', '.vbs', '.js', '.ts', '.php', '.phtml', '.py'
+    ];
     if (forbiddenExtensions.includes(originalExtension)) {
       throw new BadRequestException('Executable files are not allowed');
     }
 
     const token = crypto.randomUUID();
-    const filePath = path.join(this.uploadDir, token);
+    // Protection basique contre le path traversal même si le token est un UUID généré
+    const safeFilename = path.basename(token);
+    const filePath = path.join(this.uploadDir, safeFilename);
+
+    // Vérification stricte que le chemin résolu reste dans uploadDir
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(path.resolve(this.uploadDir))) {
+      throw new InternalServerErrorException('Invalid file path detected');
+    }
 
     try {
-      fs.writeFileSync(filePath, file.buffer);
+      fs.writeFileSync(resolvedPath, file.buffer);
     } catch (error) {
       throw new InternalServerErrorException('Failed to save file to disk');
     }
