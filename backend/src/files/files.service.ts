@@ -19,7 +19,7 @@ export class FilesService {
     }
   }
 
-  async uploadFile(file: Express.Multer.File, uploadFileDto: UploadFileDto, userId: string) {
+  async uploadFile(file: Express.Multer.File, uploadFileDto: UploadFileDto, userId?: string) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -65,20 +65,25 @@ export class FilesService {
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
     try {
+      const data: any = {
+        originalName: file.originalname,
+        storedName: token,
+        mimeType: file.mimetype,
+        sizeBytes: file.size,
+        token,
+        passwordHash,
+        expiresAt,
+        tags: uploadFileDto.tags ? {
+          create: uploadFileDto.tags.map(name => ({ name })),
+        } : undefined,
+      };
+
+      if (userId) {
+        data.userId = userId;
+      }
+
       const savedFile = await this.prisma.file.create({
-        data: {
-          userId,
-          originalName: file.originalname,
-          storedName: token,
-          mimeType: file.mimetype,
-          sizeBytes: file.size,
-          token,
-          passwordHash,
-          expiresAt,
-          tags: uploadFileDto.tags ? {
-            create: uploadFileDto.tags.map(name => ({ name })),
-          } : undefined,
-        },
+        data,
         include: {
           tags: true,
         },
@@ -89,7 +94,7 @@ export class FilesService {
         token: savedFile.token,
         originalName: savedFile.originalName,
         expiresAt: savedFile.expiresAt,
-        tags: savedFile.tags.map(t => t.name),
+        tags: savedFile.tags?.map((t: any) => t.name) || [],
       };
     } catch (error) {
       if (fs.existsSync(filePath)) {

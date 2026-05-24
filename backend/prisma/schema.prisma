@@ -22,7 +22,7 @@ model User {
 
 model File {
   id           String    @id @default(uuid())
-  userId       String    @map("user_id")
+  userId       String?   @map("user_id")
   originalName String    @map("original_name")
   storedName   String    @map("stored_name")
   mimeType     String    @map("mime_type")
@@ -33,7 +33,7 @@ model File {
   createdAt    DateTime  @default(now()) @map("created_at")
   deletedAt    DateTime? @map("deleted_at")
 
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   tags Tag[]
 
   @@map("files")

@@ -23,6 +23,15 @@ export class FilesController {
     return this.filesService.uploadFile(file, uploadFileDto, user.id);
   }
 
+  @Post('upload/anonymous')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAnonymousFile(
+    @UploadedFile() file: any,
+    @Body() uploadFileDto: UploadFileDto,
+  ) {
+    return this.filesService.uploadFile(file, uploadFileDto);
+  }
+
   @Get('download/:token')
   async getFileMetadata(@Param('token') token: string) {
     return this.filesService.getFileMetadata(token);
