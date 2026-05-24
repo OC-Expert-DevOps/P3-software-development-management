@@ -1,10 +1,12 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadFileDto } from './dto/upload-file.dto';
+import { DownloadFileDto } from './dto/download-file.dto';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as bcrypt from 'bcrypt';
+import { NotFoundException, UnauthorizedException, GoneException } from '@nestjs/common';
 
 @Injectable()
 export class FilesService {
@@ -95,5 +97,71 @@ export class FilesService {
       }
       throw new InternalServerErrorException('Failed to save file metadata to database');
     }
+  }
+
+  async getFileMetadata(token: string) {
+    const file = await this.prisma.file.findUnique({
+      where: { token },
+      include: { tags: true },
+    });
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    if (file.expiresAt < new Date()) {
+      throw new GoneException('File has expired');
+    }
+
+    return {
+      token: file.token,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      sizeBytes: file.sizeBytes,
+      expiresAt: file.expiresAt,
+      isPasswordProtected: !!file.passwordHash,
+      tags: file.tags.map(t => t.name),
+    };
+  }
+
+  async getFileStream(token: string, downloadFileDto: DownloadFileDto) {
+    const file = await this.prisma.file.findUnique({
+      where: { token },
+    });
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    if (file.expiresAt < new Date()) {
+      throw new GoneException('File has expired');
+    }
+
+    if (file.passwordHash) {
+      if (!downloadFileDto.password) {
+        throw new UnauthorizedException('Password is required to download this file');
+      }
+      const isPasswordValid = await bcrypt.compare(downloadFileDto.password, file.passwordHash);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid password');
+      }
+    }
+
+    const safeFilename = path.basename(file.storedName);
+    const filePath = path.join(this.uploadDir, safeFilename);
+
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(path.resolve(this.uploadDir))) {
+      throw new InternalServerErrorException('Invalid file path detected');
+    }
+
+    if (!fs.existsSync(resolvedPath)) {
+      throw new NotFoundException('Physical file not found on server');
+    }
+
+    return {
+      stream: fs.createReadStream(resolvedPath),
+      fileInfo: file,
+    };
   }
 }
