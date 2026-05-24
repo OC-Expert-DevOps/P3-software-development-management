@@ -14,6 +14,7 @@
 | Tests E2E | **Cypress** | Playwright | Recommandé par le brief. Très bonne DX pour tester les flux utilisateurs (inscription, upload, téléchargement). |
 | Performance | **k6** | Artillery, JMeter | Recommandé par le brief. Écriture des tests en JS, métriques très claires (P95, RPS). |
 | Serveur Web / Proxy | **Nginx** | Apache, Traefik | Léger, très performant pour servir le frontend buildé et faire office de reverse proxy vers l'API backend dans Docker Compose. |
+| **Observabilité (Logs, Traces, Métriques)** | **Pino (Logs) + Prometheus/Grafana (Metrics) + Jaeger (Traces)** | ELK Stack, Datadog | **Logs**: Pino pour des logs JSON structurés ultra-rapides (essentiel pour l'analyse machine).<br>**Métriques**: Prometheus via NestJS (ex: compteurs HTTP, erreurs, latence) visualisées sur Grafana.<br>**Traces**: Jaeger (OpenTelemetry) pour suivre une requête de bout en bout (Nginx -> Backend -> DB). |
 
 ## Diagramme d'Architecture
 
@@ -44,6 +45,16 @@ flowchart TD
     
     Backend -->|Prisma TCP 5432| DB
     Backend -->|Lecture Écriture FS| Storage
+    
+    subgraph Observabilité
+        Prometheus[Prometheus\nMetrics]
+        Grafana[Grafana\nDashboards]
+        Jaeger[Jaeger\nTraces]
+    end
+    
+    Backend -.->|Expose /metrics| Prometheus
+    Backend -.->|Envoie traces OTLP| Jaeger
+    Prometheus -.->|Source de données| Grafana
     
     %% Style
     classDef primary fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
