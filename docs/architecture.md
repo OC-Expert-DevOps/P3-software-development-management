@@ -42,8 +42,8 @@ flowchart TD
     Nginx -->|Sert fichiers statiques| Frontend
     Nginx -->|Route /api| Backend
     
-    Backend -->|Prisma (TCP 5432)| DB
-    Backend -->|Lecture/Écriture FS| Storage
+    Backend -->|Prisma TCP 5432| DB
+    Backend -->|Lecture Écriture FS| Storage
     
     %% Style
     classDef primary fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
