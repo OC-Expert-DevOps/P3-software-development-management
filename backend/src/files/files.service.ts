@@ -6,7 +6,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as bcrypt from 'bcrypt';
-import { NotFoundException, UnauthorizedException, GoneException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException, GoneException, ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class FilesService {
@@ -163,5 +163,75 @@ export class FilesService {
       stream: fs.createReadStream(resolvedPath),
       fileInfo: file,
     };
+  }
+
+  async getUserFiles(userId: string, tag?: string) {
+    const whereClause: any = {
+      userId,
+      expiresAt: {
+        gt: new Date(), // uniquement les non expirés
+      },
+    };
+
+    if (tag) {
+      whereClause.tags = {
+        some: {
+          name: tag,
+        },
+      };
+    }
+
+    const files = await this.prisma.file.findMany({
+      where: whereClause,
+      include: { tags: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return files.map(file => ({
+      id: file.id,
+      originalName: file.originalName,
+      sizeBytes: file.sizeBytes,
+      expiresAt: file.expiresAt,
+      createdAt: file.createdAt,
+      token: file.token, // Pour le lien de partage
+      tags: file.tags.map(t => t.name),
+      isPasswordProtected: !!file.passwordHash,
+    }));
+  }
+
+  async deleteUserFile(userId: string, fileId: string) {
+    const file = await this.prisma.file.findUnique({
+      where: { id: fileId },
+    });
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    if (file.userId !== userId) {
+      throw new ForbiddenException('You do not have permission to delete this file');
+    }
+
+    // Suppression physique (si existant)
+    const safeFilename = path.basename(file.storedName);
+    const filePath = path.join(this.uploadDir, safeFilename);
+    const resolvedPath = path.resolve(filePath);
+    
+    if (resolvedPath.startsWith(path.resolve(this.uploadDir)) && fs.existsSync(resolvedPath)) {
+      fs.unlinkSync(resolvedPath);
+    }
+
+    // La suppression en BDD supprimera aussi les tags en cascade
+    // Prisma gère le onDelete: Cascade s'il a été défini, ou il faut supprimer explicitement les tags si non
+    // Pour être safe on delete directement le fichier (le onDelete Cascade est déjà sur le schéma Prisma si bien défini)
+    await this.prisma.tag.deleteMany({
+      where: { fileId },
+    });
+
+    await this.prisma.file.delete({
+      where: { id: fileId },
+    });
+
+    return { success: true };
   }
 }
