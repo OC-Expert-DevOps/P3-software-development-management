@@ -1,15 +1,14 @@
 # Active Context
 
 ## Current Focus
-Réalisation de l'**Étape 1** du projet DataShare MVP.
+Réalisation de l'**Étape 3** du projet DataShare MVP.
 
 ## Recent Changes
-- Issue #1 créée (Architecture, stack technique & contrat d'API).
-- Création du dossier `docs/` et des fichiers d'architecture (`architecture.md`, `data-model.md`).
-- Création du contrat d'interface OpenAPI 3.0 (`docs/api/openapi.yaml`).
-- Mise à jour des `techContext` et `systemPatterns` dans la Memory Bank pour refléter les décisions d'architecture (NestJS, React, PostgreSQL).
+- Initialisation du Backend NestJS et du Frontend React (Étape 2).
+- Création de la migration initiale de base de données PostgreSQL via Prisma.
+- Implémentation du système d'authentification complet côté backend (JWT, bcrypt).
+- Sécurisation via les Guards (`JwtAuthGuard`, `JwtRefreshGuard`).
+- Création des tests unitaires validant l'authentification (US03, US04).
 
 ## Next Steps
-- Mettre à jour le fichier `README.md` racine et `CHANGELOG.md` avec ces premières informations.
-- Pousser le code et fusionner la branche `feature/step-1-architecture` dans `main`.
-- Démarrer l'**Étape 2** (Développement Backend).
+- Démarrer l'**Étape 4** (Implémentation Frontend React).

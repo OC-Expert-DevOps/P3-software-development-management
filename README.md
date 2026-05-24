@@ -40,7 +40,15 @@ Ces instructions concernent l'initialisation (Étape 2). L'installation finale D
 
 ## Configuration
 ### Environment Variables
-*(La liste complète des variables sera finalisée lors de l'implémentation complète)*
+| Name | Required | Type | Default | Scope | Description | Example |
+|------|----------|------|---------|-------|-------------|---------|
+| `APP_ENV` | No | string | `dev` | runtime | Application environment | `dev` |
+| `DATABASE_URL` | Yes | string | _aucun_ | db | URL de connexion PostgreSQL | `postgresql://user:pass@localhost:5432/db` |
+| `JWT_ACCESS_SECRET` | Yes | string | `fallback_secret` | auth | Secret pour l'access token JWT | `my-super-secret` |
+| `JWT_ACCESS_TTL` | No | string | `15m` | auth | Durée de vie access token | `15m` |
+| `JWT_REFRESH_SECRET` | Yes | string | `fallback_refresh_secret` | auth | Secret pour le refresh token JWT | `my-refresh-secret` |
+| `JWT_REFRESH_TTL` | No | string | `7d` | auth | Durée de vie refresh token | `7d` |
+| `BCRYPT_SALT_ROUNDS` | No | int | `12` | auth | Coût de hachage bcrypt | `12` |
 
 ## Launch (Développement Local)
 
