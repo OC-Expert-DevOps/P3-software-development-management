@@ -4,6 +4,9 @@ import { FilesService } from './files.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UploadFileDto } from './dto/upload-file.dto';
+import { DownloadFileDto } from './dto/download-file.dto';
+import { Get, Param, StreamableFile, Res, HttpCode } from '@nestjs/common';
+import type { Response } from 'express';
 
 @Controller('files')
 export class FilesController {
@@ -13,10 +16,33 @@ export class FilesController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
     @Body() uploadFileDto: UploadFileDto,
     @CurrentUser() user: { id: string },
   ) {
     return this.filesService.uploadFile(file, uploadFileDto, user.id);
+  }
+
+  @Get('download/:token')
+  async getFileMetadata(@Param('token') token: string) {
+    return this.filesService.getFileMetadata(token);
+  }
+
+  @Post('download/:token/file')
+  @HttpCode(200)
+  async downloadFile(
+    @Param('token') token: string,
+    @Body() downloadFileDto: DownloadFileDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { stream, fileInfo } = await this.filesService.getFileStream(token, downloadFileDto);
+    
+    res.set({
+      'Content-Type': fileInfo.mimeType,
+      'Content-Disposition': `attachment; filename="${fileInfo.originalName}"`,
+      'Content-Length': fileInfo.sizeBytes.toString(),
+    });
+
+    return new StreamableFile(stream);
   }
 }
