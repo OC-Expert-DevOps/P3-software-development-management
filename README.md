@@ -25,21 +25,38 @@ L'API REST est documentée via OpenAPI 3.0. Voir les détails dans [docs/api/REA
 - [x] Node.js (v20+) et npm (pour le développement local hors Docker)
 - [x] Git
 
-## Installation
-*(Les instructions détaillées d'installation via Docker Compose seront ajoutées à l'issue de l'implémentation, Étape 4).*
+## Installation (Développement Local)
+Ces instructions concernent l'initialisation (Étape 2). L'installation finale Docker Compose viendra plus tard.
+
+### Backend
+1. `cd backend`
+2. `npm install`
+3. `cp .env.example .env`
+
+### Frontend
+1. `cd frontend`
+2. `npm install`
+3. `cp .env.example .env`
 
 ## Configuration
 ### Environment Variables
-| Name | Required | Type | Default | Scope | Description | Example |
-|------|----------|------|---------|-------|-------------|---------|
-| `APP_ENV` | No | string | `dev` | runtime | Application environment | `dev` |
+*(La liste complète des variables sera finalisée lors de l'implémentation complète)*
 
-*(La liste complète des variables sera ajoutée lors du développement)*
+## Launch (Développement Local)
 
-## Launch
+### Lancer le Backend
 ```bash
-# Launch commands (à venir)
+cd backend
+npm run start:dev
 ```
+*Le backend sera accessible sur http://localhost:3001/api/v1*
+
+### Lancer le Frontend
+```bash
+cd frontend
+npm run dev
+```
+*Le frontend sera accessible sur http://localhost:3000*
 
 ## Tests
 ```bash

@@ -1,0 +1,13 @@
+Issue title: [ARCH] Architecture, stack technique & contrat d'API
+
+Description:
+Objectif de l'étape : Concevoir l'architecture technique, le modèle de données et le contrat d'interface API pour le prototype DataShare (MVP).
+
+Critères d'acceptation :
+- [ ] Le tableau de choix technologiques est documenté et justifié (`docs/architecture.md`).
+- [ ] Le diagramme d'architecture système est produit (Mermaid, `docs/architecture.md`).
+- [ ] Le schéma de base de données (MCD) est conçu (Mermaid, `docs/data-model.md`).
+- [ ] Le contrat d'interface API (OpenAPI 3.0) est défini (`docs/api/openapi.yaml` et `README.md`).
+- [ ] Le README.md racine est mis à jour avec la stack et l'architecture.
+- [ ] Le CHANGELOG.md est mis à jour avec les décisions architecturales.
+- [ ] La Memory Bank est mise à jour avec le contexte technique et les patterns système.

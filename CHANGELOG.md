@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+**Initialisation (Étape 2)** :
+- Initialisation du Backend NestJS.
+- Modèle de données Prisma (User, File, Tag).
+- Initialisation du Frontend React + Vite.
+- Configuration CORS et endpoint /health (Front -> Back).
+
 **Architecture & Conception (Étape 1)** :
 - Documentation de l'architecture (`docs/architecture.md`) avec justification des choix techniques (NestJS, React, PostgreSQL).
 - Diagramme d'architecture système (Mermaid).
