@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UploadFileDto } from './dto/upload-file.dto';
 import { DownloadFileDto } from './dto/download-file.dto';
-import { Get, Param, StreamableFile, Res, HttpCode } from '@nestjs/common';
+import { Get, Param, StreamableFile, Res, HttpCode, Delete, Query } from '@nestjs/common';
 import type { Response } from 'express';
 
 @Controller('files')
@@ -44,5 +44,23 @@ export class FilesController {
     });
 
     return new StreamableFile(stream);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getUserFiles(
+    @CurrentUser() user: { id: string },
+    @Query('tag') tag?: string,
+  ) {
+    return this.filesService.getUserFiles(user.id, tag);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deleteUserFile(
+    @CurrentUser() user: { id: string },
+    @Param('id') fileId: string,
+  ) {
+    return this.filesService.deleteUserFile(user.id, fileId);
   }
 }
