@@ -1,28 +1,32 @@
-# Project 3
+# DataShare - Prototype MVP
 
-**Manage the development of an IT solution**
+Prototype de plateforme de transfert sécurisé de fichiers pour freelances et PME. Ce projet constitue le MVP (Minimum Viable Product) de l'application DataShare.
 
-Take charge of the development cycle of a Full-stack application from architecture design to testing and technical review.
+## Architecture et Stack Technique
 
-*50 supervised hours*
+### Stack Technique Choisie
+- **Backend** : NestJS (TypeScript)
+- **Frontend** : React + Vite + TypeScript
+- **Base de données** : PostgreSQL
+- **ORM** : Prisma
+- **Stockage** : Volume local (via Docker)
+- **Déploiement** : Docker Compose avec Nginx (Reverse Proxy)
 
-## Skills acquired in this project
+Pour une justification détaillée de ces choix et le diagramme complet, consultez [docs/architecture.md](docs/architecture.md).
 
-- Analyze and design an API to integrate the front-end and back-end of an application
-- Ensure code performance, compliance, and maintenance
-- Define the front-end architecture of an application
-- Develop the components and interfaces of an application
-- Implement tests to improve a solution
-- Write technical documentation
-- Take charge of the implementation of the back-end architecture
+### Modèle de données
+Le schéma de la base de données est documenté ici : [docs/data-model.md](docs/data-model.md).
 
-## Prerequisites
-- [x] DevOps tools (Docker, Kubernetes, Terraform, etc. as needed)
+### Contrat d'API (OpenAPI)
+L'API REST est documentée via OpenAPI 3.0. Voir les détails dans [docs/api/README.md](docs/api/README.md).
+
+## Prérequis
+- [x] Docker et Docker Compose
+- [x] Node.js (v20+) et npm (pour le développement local hors Docker)
+- [x] Git
 
 ## Installation
-```bash
-# Installation commands
-```
+*(Les instructions détaillées d'installation via Docker Compose seront ajoutées à l'issue de l'implémentation, Étape 4).*
 
 ## Configuration
 ### Environment Variables
@@ -30,19 +34,25 @@ Take charge of the development cycle of a Full-stack application from architectu
 |------|----------|------|---------|-------|-------------|---------|
 | `APP_ENV` | No | string | `dev` | runtime | Application environment | `dev` |
 
+*(La liste complète des variables sera ajoutée lors du développement)*
+
 ## Launch
 ```bash
-# Launch commands
+# Launch commands (à venir)
 ```
 
 ## Tests
 ```bash
-# Test commands
+# Test commands (à venir)
 ```
 
 ## Security
 - Secrets should be managed via environment variables.
 - No sensitive data should be committed to the repository.
+- L'authentification est gérée via JWT (Access & Refresh tokens).
+- Les mots de passe sont hachés avec `bcrypt`.
 
 ## Limitations
-- Training context limitations apply.
+- Training context limitations apply (Projet développé dans le cadre d'un parcours OpenClassrooms).
+- Le prototype MVP ne gère pas l'envoi d'e-mails réels pour l'inscription.
+- HTTPS en production locale n'est pas géré nativement (hors scope MVP).
