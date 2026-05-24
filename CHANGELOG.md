@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+**Authentification Backend (Étape 3)** :
+- Implémentation du système d'authentification (register, login, refresh).
+- Configuration de l'authentification JWT (Access Token 15m, Refresh Token 7j).
+- Sécurisation des mots de passe avec bcrypt (cost 12).
+- Tests unitaires pour les services d'authentification et utilisateurs.
+- Création de la migration initiale de base de données.
+
 **Initialisation (Étape 2)** :
 - Initialisation du Backend NestJS.
 - Modèle de données Prisma (User, File, Tag).

@@ -9,9 +9,12 @@
   - Backend NestJS initialisé avec endpoint `/health`.
   - Modèle Prisma créé.
   - Frontend React+Vite initialisé (communication avec backend validée).
+- **Étape 3 : Authentification Backend** (Complété)
+  - Inscription (US03) et Connexion (US04) avec JWT et bcrypt.
+  - Stratégies JWT Access (15m) et Refresh (7j).
+  - Couverture de test via Jest.
 
 ## What's left
-- Étape 3 : Implémentation Backend (NestJS).
 - Étape 4 : Implémentation Frontend (React).
 - Étape 4 : Infra Docker Compose.
 - Étape 5 : Tests & Qualité (Cypress, k6).
